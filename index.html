@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipação - Demonstração ao Vivo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2f4f 50%, #0d2847 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Elementos decorativos de fundo */
+        .decoration {
+            position: absolute;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .decoration-line {
+            position: absolute;
+            border: 2px solid #00d4ff;
+            border-radius: 50%;
+        }
+
+        .line-1 {
+            top: -100px;
+            right: -50px;
+            width: 400px;
+            height: 400px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .line-2 {
+            bottom: -150px;
+            right: 50px;
+            width: 500px;
+            height: 500px;
+            border-top: none;
+            border-right: none;
+        }
+
+        .line-3 {
+            top: 50%;
+            right: 10%;
+            width: 2px;
+            height: 600px;
+            background: linear-gradient(to bottom, transparent, #00d4ff, transparent);
+            border: none;
+        }
+
+        /* Container principal */
+        .container {
+            text-align: center;
+            z-index: 1;
+            max-width: 900px;
+            padding: 40px;
+        }
+
+        .left-border {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(to bottom, #00d4ff, #00a8cc);
+        }
+
+        /* Título principal */
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        /* Subtítulo */
+        .subtitle {
+            font-size: 2rem;
+            color: #00d4ff;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        /* Linha decorativa */
+        .line {
+            width: 200px;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #00d4ff, transparent);
+            margin: 30px auto;
+        }
+
+        /* Descrição */
+        .description {
+            font-size: 1.1rem;
+            color: #a0c4d4;
+            font-style: italic;
+            margin-top: 30px;
+            letter-spacing: 0.5px;
+        }
+
+        .description a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .description a:hover {
+            color: #0a1628;
+            background: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        /* Botões */
+        .buttons {
+            margin-top: 50px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 40px;
+            font-size: 1rem;
+            border: 2px solid #00d4ff;
+            background: transparent;
+            color: #00d4ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #00d4ff;
+            color: #0a1628;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        button.primary {
+            background: #00d4ff;
+            color: #0a1628;
+        }
+
+        button.primary:hover {
+            background: #00b8d4;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.5rem;
+            }
+
+            .description {
+                font-size: 1rem;
+            }
+
+            button {
+                padding: 12px 30px;
+                font-size: 0.9rem;
+            }
+
+            .container {
+                padding: 20px;
+            }
+        }
+
+        /* Animação de entrada */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .subtitle {
+            animation: fadeInDown 0.8s ease 0.1s backwards;
+        }
+
+        .line {
+            animation: fadeInDown 0.8s ease 0.2s backwards;
+        }
+
+        .description {
+            animation: fadeInDown 0.8s ease 0.3s backwards;
+        }
+
+        .buttons {
+            animation: fadeInDown 0.8s ease 0.4s backwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Borda esquerda -->
+    <div class="left-border"></div>
+
+    <!-- Decorações de fundo -->
+    <div class="decoration-line line-1"></div>
+    <div class="decoration-line line-2"></div>
+    <div class="decoration-line line-3"></div>
+
+    <!-- Conteúdo principal -->
+    <div class="container">
+        <h1>Prototipação</h1>
+        <div class="subtitle">Demonstração ao Vivo</div>
+        <div class="line"></div>
+        <p class="description">Protótipo funcional interativo em HTML - <a href="dev-analytics-dashboard-v2.html">Dashboard</a> e <a href="dev-analytics-admin-panel.html">Admin</a></p>
+
+        <div class="buttons">
+            <button class="primary" onclick="alert('Clicou em Iniciar!')">Iniciar</button>
+            <button onclick="alert('Clicou em Saiba Mais!')">Saiba Mais</button>
+        </div>
+    </div>
+</body>
+</html>
