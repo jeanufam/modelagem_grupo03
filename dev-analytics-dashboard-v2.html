@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Analytics - Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-light: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #f1f5f9 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 40px 24px;
+            color: white;
+            box-shadow: 2px 0 12px rgba(99, 102, 241, 0.15);
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 48px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+        }
+
+        .nav-section {
+            margin-bottom: 36px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            opacity: 0.6;
+            margin-bottom: 12px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.85;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 48px 48px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .filter-input, .filter-select {
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            background: white;
+            cursor: pointer;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .btn-simulate {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-simulate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .kpi-card:nth-child(2)::before {
+            background: linear-gradient(90deg, var(--accent), var(--success));
+        }
+
+        .kpi-card:nth-child(3)::before {
+            background: linear-gradient(90deg, var(--warning), var(--danger));
+        }
+
+        .kpi-card:nth-child(4)::before {
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .kpi-label {
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .kpi-change {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .kpi-change.positive {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        /* Charts Section */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 48px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-left: 4px solid var(--success);
+            padding: 20px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            animation: slideInUp 0.4s ease;
+            z-index: 9999;
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-option:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .modal-option input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .modal-footer .btn {
+            flex: 1;
+        }
+
+        .date-range {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .date-range input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        /* Status bar */
+        .status-bar {
+            background: linear-gradient(135deg, var(--success), var(--accent));
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+
+        .status-bar.warning {
+            background: linear-gradient(135deg, var(--warning), var(--danger));
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .grid-full {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 24px;
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .main {
+                padding: 24px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px;
+            background: var(--bg-light);
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .data-table tr:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                📊 <span>DevAnalytics</span>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-label">Menu Principal</div>
+                <div class="nav-item active">📈 Dashboard</div>
+                <div class="nav-item" onclick="navigateTo('reports')">📋 Relatórios</div>
+                <div class="nav-item" onclick="navigateTo('admin')">⚙️ Admin</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-label">Ferramentas</div>
+                <div class="nav-item" onclick="openExportModal()">📥 Exportar</div>
+                <div class="nav-item" onclick="navigateTo('settings')">⚙️ Configurações</div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1>Dashboard</h1>
+                    <p>Monitoramento em tempo real do desenvolvimento</p>
+                </div>
+                <div class="header-controls">
+                    <div class="filter-group">
+                        <input type="date" class="filter-input" id="filterDate" value="2024-01-15">
+                        <select class="filter-select" id="filterProject">
+                            <option>Todos os projetos</option>
+                            <option>Backend API</option>
+                            <option>Frontend Web</option>
+                            <option>Mobile App</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-simulate" onclick="simulateCommits()">
+                        📤 Simular Coleta
+                    </button>
+                    <button class="btn btn-primary" onclick="openExportModal()">
+                        📥 Exportar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-dot"></div>
+                Dados atualizados há 2 minutos • Sistema operacional
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total de Commits</div>
+                    <div class="kpi-value" id="kpiCommits">342</div>
+                    <div class="kpi-change positive">↑ 12% vs semana anterior</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Pull Requests</div>
+                    <div class="kpi-value">48</div>
+                    <div class="kpi-change positive">↑ 8 abertos, 12 merged</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Lead Time Médio</div>
+                    <div class="kpi-value">3.2h</div>
+                    <div class="kpi-change positive">↓ 15% mais rápido</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Saúde do Projeto</div>
+                    <div class="kpi-value">92%</div>
+                    <div class="kpi-change positive">✓ Excelente</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3 class="chart-title">Commits nos últimos 7 dias</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="commitChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">PRs por desenvolvedor</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="prChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card grid-full">
+                    <h3 class="chart-title">Contribuição da Equipe</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Desenvolvedor</th>
+                                <th>Commits</th>
+                                <th>PRs</th>
+                                <th>Revisões</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><div class="avatar">JC</div> João Carlos</td>
+                                <td id="commits-jc">48</td>
+                                <td>12</td>
+                                <td>24</td>
+                                <td><span style="color: var(--success); font-weight: 600;">95</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="avatar">MS</div> Maria Silva</td>
+                                <td id="commits-ms">42</td>
+                                <td>10</td>
+                                <td>18</td>
+                                <td><span style="color: var(--success); font-weight: 600;">88</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="avatar">PM</div> Pedro Martins</td>
+                                <td id="commits-pm">35</td>
+                                <td>8</td>
+                                <td>15</td>
+                                <td><span style="color: var(--accent); font-weight: 600;">82</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="avatar">AC</div> Ana Costa</td>
+                                <td>38</td>
+                                <td>9</td>
+                                <td>20</td>
+                                <td><span style="color: var(--success); font-weight: 600;">85</span></td>
+                            </tr>
+                            <tr>
+                                <td><div class="avatar">RF</div> Ricardo Farias</td>
+                                <td>40</td>
+                                <td>11</td>
+                                <td>16</td>
+                                <td><span style="color: var(--success); font-weight: 600;">89</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                📥 Exportar Relatório
+            </div>
+
+            <div class="date-range">
+                <label>De:</label>
+                <input type="date" id="exportStartDate" value="2024-01-08">
+                <label style="margin-left: 20px;">Até:</label>
+                <input type="date" id="exportEndDate" value="2024-01-15">
+            </div>
+
+            <div>
+                <label class="modal-option">
+                    <input type="radio" name="format" value="pdf" checked>
+                    <div>
+                        <strong>📄 PDF com Gráficos</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                            Relatório completo com visualizações, gráficos e insights
+                        </p>
+                    </div>
+                </label>
+
+                <label class="modal-option">
+                    <input type="radio" name="format" value="csv">
+                    <div>
+                        <strong>📊 CSV com Dados</strong>
+                        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                            Planilha com dados brutos para análise adicional
+                        </p>
+                    </div>
+                </label>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeExportModal()">
+                    ❌ Cancelar
+                </button>
+                <button class="btn btn-primary" onclick="handleExport()">
+                    ✅ Exportar Agora
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-title">✓ Commits simulados com sucesso!</div>
+        <div class="toast-message" id="toastMessage"></div>
+    </div>
+
+    <script>
+        // State management
+        let dashboardState = {
+            totalCommits: 342,
+            commits: {
+                'João Carlos': 48,
+                'Maria Silva': 42,
+                'Pedro Martins': 35
+            },
+            weekData: [42, 38, 55, 48, 62, 35, 42]
+        };
+
+        let commitChart, prChart;
+
+        // Initialize Charts
+        function initCharts() {
+            const commitCtx = document.getElementById('commitChart').getContext('2d');
+            commitChart = new Chart(commitCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                    datasets: [{
+                        label: 'Commits',
+                        data: dashboardState.weekData,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }
+                }
+            });
+
+            const prCtx = document.getElementById('prChart').getContext('2d');
+            prChart = new Chart(prCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['João', 'Maria', 'Pedro', 'Ana', 'Ricardo'],
+                    datasets: [{
+                        label: 'Pull Requests',
+                        data: [12, 10, 8, 9, 11],
+                        backgroundColor: ['#6366f1', '#ec4899', '#14b8a6', '#f59e0b', '#10b981'],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }
+                }
+            });
+        }
+
+        // Simulate Commits - Main Function
+        function simulateCommits() {
+            // Gerar números aleatórios para cada usuário
+            const joaoAdded = Math.floor(Math.random() * 3) + 4; // 4-6
+            const mariaAdded = Math.floor(Math.random() * 3) + 3; // 3-5
+            const pedroAdded = Math.floor(Math.random() * 3) + 2; // 2-4
+
+            // Atualizar estado
+            dashboardState.totalCommits += joaoAdded + mariaAdded + pedroAdded;
+            dashboardState.commits['João Carlos'] += joaoAdded;
+            dashboardState.commits['Maria Silva'] += mariaAdded;
+            dashboardState.commits['Pedro Martins'] += pedroAdded;
+
+            // Atualizar último dia da semana (hoje)
+            dashboardState.weekData[6] += joaoAdded + mariaAdded + pedroAdded;
+
+            // Atualizar UI
+            updateDashboardUI(joaoAdded, mariaAdded, pedroAdded);
+
+            // Mostrar toast
+            showToast(joaoAdded, mariaAdded, pedroAdded);
+
+            // Atualizar gráficos com animação
+            updateCharts();
+        }
+
+        // Update Dashboard UI
+        function updateDashboardUI(joao, maria, pedro) {
+            // Atualizar KPI
+            document.getElementById('kpiCommits').textContent = dashboardState.totalCommits;
+
+            // Atualizar tabela
+            document.getElementById('commits-jc').textContent = dashboardState.commits['João Carlos'];
+            document.getElementById('commits-ms').textContent = dashboardState.commits['Maria Silva'];
+            document.getElementById('commits-pm').textContent = dashboardState.commits['Pedro Martins'];
+        }
+
+        // Update Charts
+        function updateCharts() {
+            // Atualizar gráfico de linha
+            commitChart.data.datasets[0].data = dashboardState.weekData;
+            commitChart.update('active');
+
+            // Atualizar gráfico de barras (João, Maria, Pedro)
+            prChart.data.datasets[0].data[0] = dashboardState.commits['João Carlos'];
+            prChart.data.datasets[0].data[1] = dashboardState.commits['Maria Silva'];
+            prChart.data.datasets[0].data[2] = dashboardState.commits['Pedro Martins'];
+            prChart.update('active');
+        }
+
+        // Toast Notification
+        function showToast(joao, maria, pedro) {
+            const message = `João +${joao} | Maria +${maria} | Pedro +${pedro} commits adicionados`;
+            document.getElementById('toastMessage').textContent = message;
+            
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // Modal Functions
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+
+        function handleExport() {
+            const format = document.querySelector('input[name="format"]:checked').value;
+            const startDate = document.getElementById('exportStartDate').value;
+            const endDate = document.getElementById('exportEndDate').value;
+
+            alert(`✅ Exportando relatório em ${format.toUpperCase()}\nPeríodo: ${startDate} até ${endDate}`);
+            closeExportModal();
+        }
+
+        function navigateTo(page) {
+            if (page === 'admin') {
+                alert('Abrindo Admin Panel...\n\n(Em produção, seria um redirect)');
+            } else {
+                alert(`Navegando para: ${page}`);
+            }
+        }
+
+        // Close modal on background click
+        document.getElementById('exportModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeExportModal();
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('load', initCharts);
+    </script>
+</body>
+</html>

@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Analytics - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-light: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-light) 0%, #f1f5f9 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--warning) 0%, #ea580c 100%);
+            padding: 40px 24px;
+            color: white;
+            box-shadow: 2px 0 12px rgba(245, 158, 11, 0.15);
+            overflow-y: auto;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 48px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, var(--secondary), var(--danger));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 28px;
+        }
+
+        .nav-section {
+            margin-bottom: 36px;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            opacity: 0.6;
+            margin-bottom: 12px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.85;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            opacity: 1;
+        }
+
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.25);
+            opacity: 1;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 48px 48px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 48px;
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--warning), var(--danger));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-left p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-simulate {
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-simulate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Status Badge */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-error {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 48px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Webhook Cards */
+        .webhooks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .webhook-card {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--success);
+            transition: all 0.3s ease;
+        }
+
+        .webhook-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .webhook-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .webhook-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .webhook-url {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .webhook-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0;
+            padding: 12px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .webhook-health {
+            margin: 16px 0;
+        }
+
+        .health-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--accent));
+            border-radius: 3px;
+        }
+
+        .health-percent {
+            font-size: 12px;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .last-request {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+
+        .last-request-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .last-request-detail {
+            font-size: 12px;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .last-request-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-event {
+            position: relative;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .timeline-event:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -16px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--success);
+            border: 2px solid white;
+            box-shadow: 0 0 0 3px var(--success);
+        }
+
+        .timeline-event.warning .timeline-dot {
+            background: var(--warning);
+            box-shadow: 0 0 0 3px var(--warning);
+        }
+
+        .timeline-event.error .timeline-dot {
+            background: var(--danger);
+            box-shadow: 0 0 0 3px var(--danger);
+        }
+
+        .timeline-status {
+            font-size: 12px;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .timeline-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Repositories Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 16px;
+            background: var(--bg-light);
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Users Table */
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        .users-table th {
+            text-align: left;
+            padding: 16px;
+            background: var(--bg-light);
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .users-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .users-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        .role-badge.manager {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .role-badge.developer {
+            background: #dbeafe;
+            color: #0c4a6e;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            border-left: 4px solid var(--success);
+            padding: 20px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            animation: slideInUp 0.4s ease;
+            z-index: 9999;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-title {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 8px;
+        }
+
+        .toast-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .main {
+                padding: 24px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .webhooks-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                🔐 <span>Admin</span>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-label">Gerenciamento</div>
+                <div class="nav-item active">🔗 Webhooks</div>
+                <div class="nav-item">🗄️ Repositórios</div>
+                <div class="nav-item">👥 Usuários</div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-label">Sistema</div>
+                <div class="nav-item">⚙️ Configurações</div>
+                <div class="nav-item">📊 Logs</div>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">🚪 Sair do Admin</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1>Admin Panel</h1>
+                    <p>Controle e monitoramento do sistema</p>
+                </div>
+                <button class="btn btn-simulate" onclick="simulateReceive()">
+                    📥 Simular Recebimento
+                </button>
+            </div>
+
+            <!-- Webhooks Section -->
+            <div class="section">
+                <div class="section-title">🔗 Webhooks - Status dos Repositórios</div>
+                <div class="webhooks-grid">
+                    <!-- Webhook 1 -->
+                    <div class="webhook-card">
+                        <div class="webhook-header">
+                            <div>
+                                <div class="webhook-name">Backend API</div>
+                                <div class="webhook-url">github.com/company/backend-api</div>
+                            </div>
+                            <span class="badge badge-active">Ativo</span>
+                        </div>
+
+                        <div class="webhook-status">
+                            <div class="status-dot"></div>
+                            <span style="font-size: 12px; color: var(--success); font-weight: 600;">OPERACIONAL</span>
+                        </div>
+
+                        <div class="webhook-health">
+                            <div class="health-label">Saúde</div>
+                            <div class="health-bar">
+                                <div class="health-fill" style="width: 90%;"></div>
+                            </div>
+                            <div class="health-percent">90%</div>
+                        </div>
+
+                        <div class="last-request">
+                            <div class="last-request-label">Última Requisição</div>
+                            <div class="last-request-detail">✓ 200 OK - Há 2 minutos</div>
+                            <div class="last-request-meta">POST /webhook | 342ms | 1.2 KB</div>
+                        </div>
+
+                        <div class="timeline">
+                            <div class="timeline-event">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">✓ 200 OK</div>
+                                <div class="timeline-time">2 min atrás</div>
+                            </div>
+                            <div class="timeline-event">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">✓ 200 OK</div>
+                                <div class="timeline-time">5 min atrás</div>
+                            </div>
+                            <div class="timeline-event warning">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">⚠ 504 Timeout</div>
+                                <div class="timeline-time">15 min atrás</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Webhook 2 -->
+                    <div class="webhook-card">
+                        <div class="webhook-header">
+                            <div>
+                                <div class="webhook-name">Frontend Web</div>
+                                <div class="webhook-url">github.com/company/frontend-web</div>
+                            </div>
+                            <span class="badge badge-active">Ativo</span>
+                        </div>
+
+                        <div class="webhook-status">
+                            <div class="status-dot"></div>
+                            <span style="font-size: 12px; color: var(--success); font-weight: 600;">OPERACIONAL</span>
+                        </div>
+
+                        <div class="webhook-health">
+                            <div class="health-label">Saúde</div>
+                            <div class="health-bar">
+                                <div class="health-fill" style="width: 95%;"></div>
+                            </div>
+                            <div class="health-percent">95%</div>
+                        </div>
+
+                        <div class="last-request">
+                            <div class="last-request-label">Última Requisição</div>
+                            <div class="last-request-detail">✓ 200 OK - Há 1 minuto</div>
+                            <div class="last-request-meta">POST /webhook | 285ms | 1.0 KB</div>
+                        </div>
+
+                        <div class="timeline">
+                            <div class="timeline-event">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">✓ 200 OK</div>
+                                <div class="timeline-time">1 min atrás</div>
+                            </div>
+                            <div class="timeline-event">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">✓ 200 OK</div>
+                                <div class="timeline-time">4 min atrás</div>
+                            </div>
+                            <div class="timeline-event">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">✓ 200 OK</div>
+                                <div class="timeline-time">8 min atrás</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Webhook 3 -->
+                    <div class="webhook-card">
+                        <div class="webhook-header">
+                            <div>
+                                <div class="webhook-name">Mobile App</div>
+                                <div class="webhook-url">github.com/company/mobile-app</div>
+                            </div>
+                            <span class="badge badge-error">Com Aviso</span>
+                        </div>
+
+                        <div class="webhook-status">
+                            <div class="status-dot" style="background: var(--warning);"></div>
+                            <span style="font-size: 12px; color: var(--warning); font-weight: 600;">ATENÇÃO NECESSÁRIA</span>
+                        </div>
+
+                        <div class="webhook-health">
+                            <div class="health-label">Saúde</div>
+                            <div class="health-bar">
+                                <div class="health-fill" style="width: 65%; background: linear-gradient(90deg, var(--warning), var(--danger));"></div>
+                            </div>
+                            <div class="health-percent" style="color: var(--warning);">65%</div>
+                        </div>
+
+                        <div class="last-request">
+                            <div class="last-request-label">Última Requisição</div>
+                            <div class="last-request-detail">⚠ 429 Rate Limited - Há 3 minutos</div>
+                            <div class="last-request-meta">POST /webhook | 5200ms | 2.1 KB</div>
+                        </div>
+
+                        <div class="timeline">
+                            <div class="timeline-event warning">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">⚠ 429 Rate Limited</div>
+                                <div class="timeline-time">3 min atrás</div>
+                            </div>
+                            <div class="timeline-event error">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">✗ 500 Server Error</div>
+                                <div class="timeline-time">12 min atrás</div>
+                            </div>
+                            <div class="timeline-event">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-status">✓ 200 OK</div>
+                                <div class="timeline-time">25 min atrás</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repositories Section -->
+            <div class="section">
+                <div class="section-title">🗄️ Repositórios Conectados</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Repositório</th>
+                            <th>Status</th>
+                            <th>Último Update</th>
+                            <th>Commits Coletados</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>backend-api</strong></td>
+                            <td><span class="badge badge-active">Online</span></td>
+                            <td>Há 2 minutos</td>
+                            <td>342</td>
+                            <td style="color: var(--text-secondary); font-size: 12px;">Conectado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>frontend-web</strong></td>
+                            <td><span class="badge badge-active">Online</span></td>
+                            <td>Há 1 minuto</td>
+                            <td>287</td>
+                            <td style="color: var(--text-secondary); font-size: 12px;">Conectado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>mobile-app</strong></td>
+                            <td><span class="badge badge-error">Com Aviso</span></td>
+                            <td>Há 3 minutos</td>
+                            <td>156</td>
+                            <td style="color: var(--text-secondary); font-size: 12px;">Requer Atenção</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Users Section -->
+            <div class="section">
+                <div class="section-title">👥 Usuários do Sistema</div>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Último Acesso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="avatar" style="background: linear-gradient(135deg, #6366f1, #ec4899);">JC</div>
+                                João Carlos
+                            </td>
+                            <td>joao.carlos@company.com</td>
+                            <td><span class="badge role-badge">Admin</span></td>
+                            <td><span class="badge badge-active">Ativo</span></td>
+                            <td>Hoje 14:30</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="avatar" style="background: linear-gradient(135deg, #ec4899, #14b8a6);">MS</div>
+                                Maria Silva
+                            </td>
+                            <td>maria.silva@company.com</td>
+                            <td><span class="badge role-badge manager">Manager</span></td>
+                            <td><span class="badge badge-active">Ativo</span></td>
+                            <td>Hoje 13:45</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="avatar" style="background: linear-gradient(135deg, #14b8a6, #f59e0b);">PM</div>
+                                Pedro Martins
+                            </td>
+                            <td>pedro.martins@company.com</td>
+                            <td><span class="badge role-badge developer">Developer</span></td>
+                            <td><span class="badge badge-active">Ativo</span></td>
+                            <td>Hoje 12:15</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="avatar" style="background: linear-gradient(135deg, #f59e0b, #10b981);">AC</div>
+                                Ana Costa
+                            </td>
+                            <td>ana.costa@company.com</td>
+                            <td><span class="badge role-badge developer">Developer</span></td>
+                            <td><span class="badge badge-active">Ativo</span></td>
+                            <td>Ontem 18:30</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="avatar" style="background: linear-gradient(135deg, #10b981, #6366f1);">RF</div>
+                                Ricardo Farias
+                            </td>
+                            <td>ricardo.farias@company.com</td>
+                            <td><span class="badge role-badge developer">Developer</span></td>
+                            <td><span class="badge badge-inactive">Inativo</span></td>
+                            <td>2 dias atrás</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-title">✓ Recebimento simulado com sucesso!</div>
+        <div class="toast-message" id="toastMessage"></div>
+    </div>
+
+    <script>
+        function simulateReceive() {
+            const joaoAdded = Math.floor(Math.random() * 3) + 4; // 4-6
+            const mariaAdded = Math.floor(Math.random() * 3) + 3; // 3-5
+            const pedroAdded = Math.floor(Math.random() * 3) + 2; // 2-4
+
+            const message = `João +${joaoAdded} | Maria +${mariaAdded} | Pedro +${pedroAdded} commits recebidos e processados`;
+            document.getElementById('toastMessage').textContent = message;
+            
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        function logout() {
+            alert('🚪 Saindo do Admin Panel...\n\n(Em produção, você seria redirecionado ao login)');
+        }
+    </script>
+</body>
+</html>
